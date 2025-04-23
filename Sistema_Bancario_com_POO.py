@@ -69,14 +69,16 @@ class Conta:
 
         return False
     
-def depositar(self, valor):
-    if valor > 0:
-        self._saldo += valor
-        print("\n=== Depósito realizado com sucesso! ===")
-    else:
-        print("\nOperação falhou! O valor informado é inválido.")
-    return False
+    def depositar(self, valor):
+        if valor > 0:
+            self._saldo += valor
+            print("\n=== Depósito realizado com sucesso! ===")
+        else:
+            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
+            return False
 
+        return True
+    
 class ContaCorrente(Conta):
     def __init__(self, numero, cliente, limite=500, limite_saques=3):
         super().__init__(numero, cliente)
@@ -129,10 +131,12 @@ class Historico:
 class Transacao(ABC):
 
     @property
-    @abstractproperty
+    @abstractmethod
     def valor(self):
         pass
 
+    @classmethod
+    @abstractmethod
     def registrar(self, conta):
         pass
 
@@ -144,7 +148,7 @@ class Saque(Transacao):
     @property
     def valor(self):
         return self._valor
-
+    
     def registrar(self, conta):
         sucesso_transacao = conta.sacar(self.valor)
 
@@ -251,30 +255,48 @@ def contas_cadastradas(contas):
 
 def main():
 
-    clientes = []
-    conta = []
+    saldo = 0
+    limite = 500
+    extrato = ""
+    numero_saques = 0
+    LIMITE_SAQUES = 3
+    AGENCIA = "0001"
+    usuarios = []
+    contas = []
 
 
     while True:
         opcao = menu()
 
         if opcao =="1":
-            sacar(clientes)
+            valor = float(input("Informe o valor do saque: "))
+
+            saldo, extrato = sacar(
+                saldo=saldo,
+                valor=valor,
+                extrato=extrato,
+                limite=limite,
+                numero_saques=numero_saques,
+                limite_saques=LIMITE_SAQUES,
+            )
         elif  opcao =="2":
-            depositar(clientes)
+            valor = float(input("Qual a quantia que deseja depositar: R$"))
+            saldo, extrato = depositar(saldo, valor, extrato)
 
         elif opcao =="3":
-            exibir_extrato(clientes)
+            exibir_extrato(saldo, extrato=extrato)
 
         elif opcao == "4":
-            criar_usuario(clientes)
+            criar_usuario(usuarios)
 
         elif opcao == "5":
-            numero_conta = len(conta) + 1
-            criar_conta(numero_conta, clientes, conta)
+            numero_conta = len(contas) + 1
+            conta = criar_conta(AGENCIA, numero_conta, usuarios)
+            if conta:
+                contas.append(conta)
 
         elif opcao == "6":
-            contas_cadastradas(conta)
+            print(contas)
         
         elif opcao == "0":
             break
